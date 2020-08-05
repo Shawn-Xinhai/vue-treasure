@@ -1,3 +1,4 @@
+import { ReplaySubject }  from 'rxjs'
 class Step {
   /**
    * @param {String} name step对应的唯一名称
@@ -20,8 +21,11 @@ class Step {
   }
 }
 
-export default class StepController {
+class StepController {
   constructor() {
+    this.stepChangeSubject = new ReplaySubject()
+    this.stepActiveSubject = new ReplaySubject()
+    this.finishSubject = new ReplaySubject()
     this.initialize()
   }
 
@@ -29,10 +33,8 @@ export default class StepController {
   initialize() {
     this._nameStepMap = Object.create(null)
     this._stepList = []
-    this._activeListners = []
-    this._changeListners = []
-    this._finishListners = []
     this._activeStep = null
+    this.subscriptions = []
   }
 
   /**
@@ -44,7 +46,7 @@ export default class StepController {
     const step = new Step(name, component, state, title)
     this._stepList.push(step)
     this._nameStepMap[name] = step
-    this._changeListners.forEach(fn => fn())
+    this.stepChangeSubject.next(this._stepList)
     return this
   }
 
@@ -64,7 +66,7 @@ export default class StepController {
     const step = this._nameStepMap[name]
     if (step) {
       step.setStatus(state)
-      this._changeListners.forEach(fn => fn())
+      this.stepChangeSubject.next(this._stepList)
     }
     return this
   }
@@ -77,7 +79,7 @@ export default class StepController {
     const step = this._nameStepMap[name]
     if (step) {
       this._activeStep = step
-      this._activeListners.forEach(fn => fn(step))
+      this.stepActiveSubject.next(this._activeStep)
     }
     return this
   }
@@ -91,7 +93,7 @@ export default class StepController {
     const currentIdx = this._stepList.lastIndexOf(currentStep)
     if (currentIdx === -1) return
     if (currentIdx === this._stepList.length - 1) {
-      this.finish()
+      this.finishSubject.next(true)
     } else {
       const nextStep = this._stepList[currentIdx + 1]
       // 调用nextStep的话，就把下一步的dsiabled状态解除
@@ -101,27 +103,24 @@ export default class StepController {
   }
 
   /**
-   * 触发监听结束事件的回调
-   */
-  finish() {
-    this._finishListners.forEach(fn => fn())
-  }
-
-  /**
-   * 增加一个监听active状态变化的回调
-   * @param {function} listener 回调函数
+   * 增加一个监听active状态变化的订阅
+   * @param {function} listener 订阅函数
    */
   addActiveListener(listener) {
-    this._activeListners.push(listener)
+    this.subscriptions.push(
+      this.stepActiveSubject.subscribe(listener)
+    )
     return this
   }
 
   /**
    * 增加一个监听state，以及增删步骤的回调
-   * @param {function} listener 回调函数
+   * @param {function} listener 订阅函数
    */
-  onChange(listner) {
-    this._changeListners.push(listner)
+  onChange(listener) {
+    this.subscriptions.push(
+      this.stepChangeSubject.subscribe(listener)
+    )
     return this
   }
 
@@ -129,8 +128,25 @@ export default class StepController {
    * 增加一个监听结束的回调
    * @param {function} listener 回调函数
    */
-  onFinish(listner) {
-    this._finishListners.push(listner)
+  onFinish(listener) {
+    this.subscriptions.push(
+      this.finishSubject.subscribe(listener)
+    )
     return this
   }
+
+  /**
+   * 销毁工作
+   */
+  destroy() {
+    this.subscriptions.forEach(sub => {
+      sub
+      && (typeof sub.unsubscribe === 'function')
+      && sub.unsubscribe()
+    })
+  }
 }
+
+const stepController = new StepController()
+
+export default stepController
