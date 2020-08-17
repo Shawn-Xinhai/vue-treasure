@@ -1,0 +1,86 @@
+/* 通用色
+-------------------------- */
+$color-primary: #4A8CF9; // 主色
+$color-secondary: #0C3476; // 次主色
+$color-success:#52C41B; // 成功
+$color-info: #FAAD14; // 提示
+$color-danger: #F4222D; // 错误，警告
+$color-white: #FFFFFF; // 纯白色
+$color-dark: #000000; // 黑色
+
+$theme-colors: (
+  primary: $color-primary,
+  secondary: $color-secondary,
+  success: $color-success,
+  info: $color-info,
+  danger: $color-danger,
+  white: $color-white,
+  dark: $color-dark
+);
+
+/*
+下面的循环会生成诸如：
+text-primary, bg-secondary, border-success, fill-info的class
+在页面上用到颜色的地方，就直接使用这些class
+不要直接引用$color-primary这样的变量名字
+*/
+@each $name, $color in $theme-colors {
+  // 文字颜色class
+  .text-#{$name} {
+    color: $color;
+  }
+  // 背景颜色class
+  .bg-#{$name} {
+    background-color: $color;
+  }
+  // 边框颜色class
+  .border-#{$name} {
+    border-color: $color;
+  }
+  // svg颜色class
+  .fill-#{$name} {
+    fill: $color;
+  }
+}
+
+
+/* 黑色
+-------------------------- */
+
+//这些黑色专门用于文字，不要用在非文字的内容
+$color-dark-85: rgba($color-dark, 0.85); // 85%
+$color-dark-65: rgba($color-dark, 0.65); // 65%
+$color-dark-45: rgba($color-dark, 0.45); // 45%
+$color-dark-35: rgba($color-dark, 0.35); // 35%
+
+.text-highlight { color: $color-dark-85 } // 用于强调性的文字：标题，重要内容
+.text-normal { color: $color-dark-65 } // 普通文字颜色
+.text-sub { color: $color-dark-45 } // 提示文字颜色：用于一些说明性文字
+.text-muted { color: $color-dark-35 } // 不重要的文字颜色: placeholder文字，不希望用户注意到的文字
+
+
+
+/* 灰色
+-------------------------- */
+
+// 这些灰色，用作背景和边框色
+$color-gray: #E2E5ED; // 灰
+$color-gray-light: #EAEDF3; // 浅灰
+$color-gray-lighter: #F9F9FA; // 超浅灰
+
+$gray-colors: (
+  gray: $color-gray,
+  'gray-light': $color-gray-light,
+  'gray-lighter': $color-gray-lighter,
+);
+
+@each $name, $color in $gray-colors {
+  // 背景颜色class
+  .bg-#{$name} {
+    background-color: $color;
+  }
+  // 边框颜色class
+  .border-#{$name} {
+    border-color: $color;
+  }
+}
